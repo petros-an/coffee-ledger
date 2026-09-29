@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coffee Ledger</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #faf7f2;
+      color: #2c2016;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      max-width: 720px;
+      margin: 0 auto 2rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 span { color: #8b5e3c; }
+
+    .subtitle {
+      margin-top: 0.25rem;
+      color: #7a6a5a;
+      font-size: 0.9rem;
+    }
+
+    .filters {
+      max-width: 720px;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filters label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #7a6a5a;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    select {
+      border: 1.5px solid #d9cfc5;
+      border-radius: 6px;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.875rem;
+      background: #fff;
+      color: #2c2016;
+      cursor: pointer;
+      appearance: none;
+      padding-right: 1.8rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a6a5a'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.55rem center;
+    }
+
+    select:focus { outline: 2px solid #8b5e3c; outline-offset: 1px; }
+
+    .reset-btn {
+      font-size: 0.8rem;
+      color: #8b5e3c;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0.35rem 0;
+    }
+
+    .reset-btn:hover { color: #5a3a1a; }
+
+    .swap-btn {
+      font-size: 1.1rem;
+      background: none;
+      border: 1.5px solid #d9cfc5;
+      border-radius: 6px;
+      padding: 0.2rem 0.5rem;
+      cursor: pointer;
+      color: #8b5e3c;
+      line-height: 1;
+      transition: background 0.1s, border-color 0.1s;
+    }
+
+    .swap-btn:hover { background: #f2ece4; border-color: #b89070; }
+
+    .count {
+      margin-left: auto;
+      font-size: 0.85rem;
+      color: #7a6a5a;
+    }
+
+    .table-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      border: 1.5px solid #e0d6cc;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: #f2ece4;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #7a6a5a;
+      border-bottom: 1.5px solid #e0d6cc;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #f0ebe4;
+      transition: background 0.1s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fdf9f5; }
+
+    td {
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .name-from { font-weight: 600; }
+
+    .name-to { color: #5a3a1a; font-weight: 600; }
+
+    .arrow {
+      color: #b89070;
+      font-size: 0.8rem;
+      user-select: none;
+    }
+
+    .date { color: #9a8a7a; font-size: 0.85rem; }
+
+    .empty {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: #9a8a7a;
+      font-size: 0.9rem;
+    }
+
+    .section-label {
+      max-width: 720px;
+      margin: 0 auto 0.6rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #7a6a5a;
+    }
+
+    .section-label:not(:first-of-type) {
+      margin-top: 2rem;
+    }
+
+    .balance-positive { color: #2d6a2d; font-weight: 700; }
+    .balance-negative { color: #a83820; font-weight: 700; }
+    .balance-zero     { color: #9a8a7a; font-weight: 700; }
+
+    .add-form {
+      max-width: 720px;
+      margin: 0 auto 2rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .add-form .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .add-form label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #7a6a5a;
+    }
+
+    .add-form input {
+      border: 1.5px solid #d9cfc5;
+      border-radius: 6px;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.875rem;
+      background: #fff;
+      color: #2c2016;
+      font-family: inherit;
+      width: 140px;
+    }
+
+    .add-form input[type="date"] { width: 150px; }
+
+    .add-form input:focus { outline: 2px solid #8b5e3c; outline-offset: 1px; }
+
+    .add-form input.error { border-color: #a83820; }
+
+    .add-btn {
+      padding: 0.38rem 1rem;
+      background: #8b5e3c;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .add-btn:hover { background: #5a3a1a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Coffee <span>Ledger</span></h1>
+  <p class="subtitle">Who owes whom a coffee</p>
+</header>
+
+<form class="add-form" id="add-form" novalidate>
+  <datalist id="name-list"></datalist>
+  <div class="field">
+    <label for="new-from">From</label>
+    <input id="new-from" type="text" list="name-list" placeholder="Name" autocomplete="off">
+  </div>
+  <div class="field">
+    <label for="new-to">To</label>
+    <input id="new-to" type="text" list="name-list" placeholder="Name" autocomplete="off">
+  </div>
+  <div class="field">
+    <label for="new-date">Date</label>
+    <input id="new-date" type="date">
+  </div>
+  <button class="add-btn" type="submit">Add</button>
+</form>
+
+<div class="filters">
+  <div class="filter-group">
+    <label for="filter-from">From</label>
+    <select id="filter-from">
+      <option value="">Everyone</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label for="filter-to">To</label>
+    <select id="filter-to">
+      <option value="">Everyone</option>
+    </select>
+  </div>
+  <button class="swap-btn" id="swap-btn" title="Swap From and To">⇄</button>
+  <button class="reset-btn" id="reset-btn">Clear filters</button>
+  <span class="count" id="count"></span>
+</div>
+
+<p class="section-label">Transactions</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>From</th>
+        <th></th>
+        <th>To</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="ledger-body"></tbody>
+  </table>
+</div>
+
+<p class="section-label">Balances</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>From</th>
+        <th></th>
+        <th>To</th>
+        <th>Net</th>
+      </tr>
+    </thead>
+    <tbody id="net-list"></tbody>
+  </table>
+</div>
+
+<script>
+  const BASE = "http://localhost:8080";
+
+  const filterFrom = document.getElementById("filter-from");
+  const filterTo   = document.getElementById("filter-to");
+  const tbody      = document.getElementById("ledger-body");
+  const countEl    = document.getElementById("count");
+  const resetBtn   = document.getElementById("reset-btn");
+  const swapBtn    = document.getElementById("swap-btn");
+  const netList    = document.getElementById("net-list");
+  const addForm    = document.getElementById("add-form");
+  const newFrom    = document.getElementById("new-from");
+  const newTo      = document.getElementById("new-to");
+  const newDate    = document.getElementById("new-date");
+  const nameList   = document.getElementById("name-list");
+
+  newDate.value = new Date().toISOString().slice(0, 10);
+
+  let knownNames = [];
+
+  function refreshSelects(names) {
+    knownNames = names;
+    const prev = { from: filterFrom.value, to: filterTo.value };
+    [filterFrom, filterTo].forEach(sel => {
+      sel.innerHTML = `<option value="">Everyone</option>`;
+      names.forEach(n => sel.add(new Option(n, n)));
+    });
+    filterFrom.value = prev.from;
+    filterTo.value   = prev.to;
+    nameList.innerHTML = names.map(n => `<option value="${n}">`).join("");
+  }
+
+  function formatDate(iso) {
+    const [y, m, d] = iso.split("-");
+    return new Date(y, m - 1, d).toLocaleDateString("en-GB", {
+      day: "numeric", month: "short", year: "numeric"
+    });
+  }
+
+  function renderTransactions(transactions) {
+    tbody.innerHTML = transactions.length === 0
+      ? `<tr><td colspan="4"><div class="empty">No records match the current filters.</div></td></tr>`
+      : transactions.map(t => `
+          <tr>
+            <td class="name-from">${t.source}</td>
+            <td class="arrow">→</td>
+            <td class="name-to">${t.destination}</td>
+            <td class="date">${formatDate(t.date)}</td>
+          </tr>`).join("");
+    countEl.textContent = `${transactions.length} record${transactions.length !== 1 ? "s" : ""}`;
+  }
+
+  function renderBalances(balances) {
+    netList.innerHTML = balances.length === 0
+      ? `<tr><td colspan="4"><div class="empty">All settled up.</div></td></tr>`
+      : balances.map(b => `
+          <tr>
+            <td class="name-from">${b.source}</td>
+            <td class="arrow">→</td>
+            <td class="name-to">${b.destination}</td>
+            <td class="balance-negative">${b.net}</td>
+          </tr>`).join("");
+  }
+
+  async function fetchAndRender() {
+    const params = new URLSearchParams();
+    if (filterFrom.value) params.set("source", filterFrom.value);
+    if (filterTo.value)   params.set("destination", filterTo.value);
+
+    const res  = await fetch(`${BASE}/data?${params}`);
+    const data = await res.json();
+    renderTransactions(data.transactions);
+    renderBalances(data.balances);
+  }
+
+  async function init() {
+    const res  = await fetch(`${BASE}/data`);
+    const data = await res.json();
+    const names = [...new Set(data.transactions.flatMap(t => [t.source, t.destination]))].sort();
+    refreshSelects(names);
+    renderTransactions(data.transactions);
+    renderBalances(data.balances);
+  }
+
+  filterFrom.addEventListener("change", fetchAndRender);
+  filterTo.addEventListener("change", fetchAndRender);
+
+  swapBtn.addEventListener("click", () => {
+    [filterFrom.value, filterTo.value] = [filterTo.value, filterFrom.value];
+    fetchAndRender();
+  });
+
+  resetBtn.addEventListener("click", () => {
+    filterFrom.value = "";
+    filterTo.value   = "";
+    fetchAndRender();
+  });
+
+  addForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    const source      = newFrom.value.trim();
+    const destination = newTo.value.trim();
+    const date        = newDate.value;
+    const fromErr = !source      || source === destination;
+    const toErr   = !destination || source === destination;
+    newFrom.classList.toggle("error", fromErr);
+    newTo.classList.toggle("error", toErr);
+    if (fromErr || toErr || !date) return;
+
+    const res = await fetch(`${BASE}/transactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source, destination, date }),
+    });
+
+    if (!res.ok) return;
+
+    newFrom.value = "";
+    newTo.value   = "";
+    newDate.value = new Date().toISOString().slice(0, 10);
+
+    // Re-init to pick up any new names in the dropdowns
+    await init();
+    // Then re-apply current filters
+    await fetchAndRender();
+  });
+
+  [newFrom, newTo].forEach(el =>
+    el.addEventListener("input", () => el.classList.remove("error"))
+  );
+
+  init();
+</script>
+</body>
+</html>
