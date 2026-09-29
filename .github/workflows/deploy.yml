@@ -15,6 +15,7 @@ jobs:
           username: ${{ secrets.LINODE_USER }}
           key: ${{ secrets.LINODE_SSH_KEY }}
           script: |
+	    set -e
             cd ~/coffee-ledger
             git pull
             docker compose up --build -d
