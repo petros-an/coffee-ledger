@@ -310,7 +310,7 @@
 </div>
 
 <script>
-  const BASE = "http://localhost:8080";
+  const BASE = window.location.hostname === "localhost" ? "http://localhost:8080" : "/api";
 
   const filterFrom = document.getElementById("filter-from");
   const filterTo   = document.getElementById("filter-to");
